@@ -10,18 +10,15 @@ import {
   DeleteGiftParams,
 } from "@workspace/api-zod";
 import { logger } from "../lib/logger";
+import { serializeDates } from "../lib/serialize";
 
 const router: IRouter = Router();
 
-function isAdmin(telegramId: string | undefined): boolean {
+async function checkAdmin(req: import("express").Request): Promise<boolean> {
+  const telegramId = req.headers["x-telegram-id"] as string | undefined;
   if (!telegramId) return false;
   const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (!adminId) return false;
-  return telegramId === adminId;
-}
-
-async function checkAdminFromDb(telegramId: string): Promise<boolean> {
-  if (!telegramId) return false;
+  if (adminId && telegramId === adminId) return true;
   const [user] = await db
     .select()
     .from(usersTable)
@@ -30,15 +27,8 @@ async function checkAdminFromDb(telegramId: string): Promise<boolean> {
   return user?.isAdmin ?? false;
 }
 
-async function getAdminId(req: import("express").Request): Promise<string | undefined> {
-  return (req.headers["x-telegram-id"] as string) || undefined;
-}
-
 router.post("/admin/gifts/preview", async (req, res): Promise<void> => {
-  const telegramId = await getAdminId(req);
-  const hasAccess = isAdmin(telegramId) || (telegramId ? await checkAdminFromDb(telegramId) : false);
-
-  if (!hasAccess) {
+  if (!(await checkAdmin(req))) {
     res.status(403).json({ error: "Forbidden" });
     return;
   }
@@ -50,17 +40,15 @@ router.post("/admin/gifts/preview", async (req, res): Promise<void> => {
   }
 
   const { link } = parsed.data;
-
   const match = link.match(/https?:\/\/t\.me\/nft\/([^/?#]+)/);
   if (!match) {
-    res.status(400).json({ error: "Invalid Telegram gift link. Expected format: https://t.me/nft/GiftName-12345" });
+    res.status(400).json({ error: "Invalid Telegram gift link. Expected: https://t.me/nft/GiftName-12345" });
     return;
   }
 
   const giftSlug = match[1];
   const namePart = giftSlug.replace(/-\d+$/, "");
   const name = namePart.replace(/([A-Z])/g, " $1").trim();
-
   const imageUrl = `https://nft.fragment.com/gift/${giftSlug.toLowerCase()}.webp`;
 
   const preview = {
@@ -68,10 +56,7 @@ router.post("/admin/gifts/preview", async (req, res): Promise<void> => {
     giftSlug,
     telegramLink: link,
     imageUrl,
-    attributes: JSON.stringify({
-      slug: giftSlug,
-      source: "telegram",
-    }),
+    attributes: JSON.stringify({ slug: giftSlug, source: "telegram" }),
   };
 
   logger.info({ giftSlug }, "Admin previewed gift");
@@ -79,27 +64,16 @@ router.post("/admin/gifts/preview", async (req, res): Promise<void> => {
 });
 
 router.get("/admin/gifts", async (req, res): Promise<void> => {
-  const telegramId = await getAdminId(req);
-  const hasAccess = isAdmin(telegramId) || (telegramId ? await checkAdminFromDb(telegramId) : false);
-
-  if (!hasAccess) {
+  if (!(await checkAdmin(req))) {
     res.status(403).json({ error: "Forbidden" });
     return;
   }
-
-  const gifts = await db
-    .select()
-    .from(giftsTable)
-    .orderBy(giftsTable.createdAt);
-
-  res.json(gifts);
+  const gifts = await db.select().from(giftsTable).orderBy(giftsTable.createdAt);
+  res.json(gifts.map(serializeDates));
 });
 
 router.post("/admin/gifts", async (req, res): Promise<void> => {
-  const telegramId = await getAdminId(req);
-  const hasAccess = isAdmin(telegramId) || (telegramId ? await checkAdminFromDb(telegramId) : false);
-
-  if (!hasAccess) {
+  if (!(await checkAdmin(req))) {
     res.status(403).json({ error: "Forbidden" });
     return;
   }
@@ -124,14 +98,11 @@ router.post("/admin/gifts", async (req, res): Promise<void> => {
     .returning();
 
   logger.info({ giftId: gift.id, name: gift.name }, "Admin created gift");
-  res.status(201).json(gift);
+  res.status(201).json(serializeDates(gift));
 });
 
 router.patch("/admin/gifts/:id", async (req, res): Promise<void> => {
-  const telegramId = await getAdminId(req);
-  const hasAccess = isAdmin(telegramId) || (telegramId ? await checkAdminFromDb(telegramId) : false);
-
-  if (!hasAccess) {
+  if (!(await checkAdmin(req))) {
     res.status(403).json({ error: "Forbidden" });
     return;
   }
@@ -152,7 +123,7 @@ router.patch("/admin/gifts/:id", async (req, res): Promise<void> => {
   const updateData: Record<string, unknown> = {};
   if (parsed.data.price !== undefined) updateData.price = parsed.data.price;
   if (parsed.data.isListed !== undefined) updateData.isListed = parsed.data.isListed;
-  if (parsed.data.name !== undefined && parsed.data.name !== null) updateData.name = parsed.data.name;
+  if (parsed.data.name != null) updateData.name = parsed.data.name;
 
   const [gift] = await db
     .update(giftsTable)
@@ -165,14 +136,11 @@ router.patch("/admin/gifts/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(gift);
+  res.json(serializeDates(gift));
 });
 
 router.delete("/admin/gifts/:id", async (req, res): Promise<void> => {
-  const telegramId = await getAdminId(req);
-  const hasAccess = isAdmin(telegramId) || (telegramId ? await checkAdminFromDb(telegramId) : false);
-
-  if (!hasAccess) {
+  if (!(await checkAdmin(req))) {
     res.status(403).json({ error: "Forbidden" });
     return;
   }

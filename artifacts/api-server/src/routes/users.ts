@@ -8,6 +8,7 @@ import {
   CompleteOnboardingResponse,
 } from "@workspace/api-zod";
 import { logger } from "../lib/logger";
+import { serializeDates } from "../lib/serialize";
 
 const router: IRouter = Router();
 
@@ -19,7 +20,6 @@ router.post("/users/register", async (req, res): Promise<void> => {
   }
 
   const { telegramId, username, firstName, lastName, photoUrl } = parsed.data;
-
   const adminId = process.env.ADMIN_TELEGRAM_ID;
 
   const existing = await db
@@ -43,7 +43,7 @@ router.post("/users/register", async (req, res): Promise<void> => {
       })
       .where(eq(usersTable.telegramId, telegramId))
       .returning();
-    res.json(RegisterUserResponse.parse(updated));
+    res.json(RegisterUserResponse.parse(serializeDates(updated)));
     return;
   }
 
@@ -64,7 +64,7 @@ router.post("/users/register", async (req, res): Promise<void> => {
     .returning();
 
   logger.info({ telegramId }, "New user registered");
-  res.status(201).json(RegisterUserResponse.parse(user));
+  res.status(201).json(RegisterUserResponse.parse(serializeDates(user)));
 });
 
 router.patch("/users/me/onboarding", async (req, res): Promise<void> => {
@@ -87,7 +87,7 @@ router.patch("/users/me/onboarding", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(CompleteOnboardingResponse.parse(user));
+  res.json(CompleteOnboardingResponse.parse(serializeDates(user)));
 });
 
 router.get("/users/me", async (req, res): Promise<void> => {
@@ -111,7 +111,7 @@ router.get("/users/me", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(user);
+  res.json(serializeDates(user));
 });
 
 export default router;

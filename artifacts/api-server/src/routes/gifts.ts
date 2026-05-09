@@ -1,10 +1,8 @@
 import { Router, type IRouter } from "express";
 import { eq, and, like, desc, asc, count, min, max } from "drizzle-orm";
-import { db, giftsTable } from "@workspace/db";
-import {
-  ListGiftsQueryParams,
-  GetGiftParams,
-} from "@workspace/api-zod";
+import { db, giftsTable, usersTable } from "@workspace/db";
+import { ListGiftsQueryParams, GetGiftParams } from "@workspace/api-zod";
+import { serializeDates } from "../lib/serialize";
 
 const router: IRouter = Router();
 
@@ -17,25 +15,25 @@ router.get("/gifts", async (req, res): Promise<void> => {
 
   const { search, sortBy, sortOrder } = params.data;
 
-  let query = db
-    .select()
-    .from(giftsTable)
-    .where(
-      search
-        ? and(eq(giftsTable.isListed, true), like(giftsTable.name, `%${search}%`))
-        : eq(giftsTable.isListed, true)
-    );
-
   let results;
-  if (sortBy === "price") {
-    results = await (sortOrder === "desc"
-      ? query.orderBy(desc(giftsTable.price))
-      : query.orderBy(asc(giftsTable.price)));
+  if (search) {
+    const base = db
+      .select()
+      .from(giftsTable)
+      .where(and(eq(giftsTable.isListed, true), like(giftsTable.name, `%${search}%`)));
+    results =
+      sortBy === "price"
+        ? await (sortOrder === "desc" ? base.orderBy(desc(giftsTable.price)) : base.orderBy(asc(giftsTable.price)))
+        : await base.orderBy(desc(giftsTable.createdAt));
   } else {
-    results = await query.orderBy(desc(giftsTable.createdAt));
+    const base = db.select().from(giftsTable).where(eq(giftsTable.isListed, true));
+    results =
+      sortBy === "price"
+        ? await (sortOrder === "desc" ? base.orderBy(desc(giftsTable.price)) : base.orderBy(asc(giftsTable.price)))
+        : await base.orderBy(desc(giftsTable.createdAt));
   }
 
-  res.json(results);
+  res.json(results.map(serializeDates));
 });
 
 router.get("/gifts/:id", async (req, res): Promise<void> => {
@@ -57,30 +55,27 @@ router.get("/gifts/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(gift);
+  res.json(serializeDates(gift));
 });
 
 router.get("/market/stats", async (_req, res): Promise<void> => {
-  const totalGiftsResult = await db.select({ count: count() }).from(giftsTable);
-  const listedGiftsResult = await db
+  const [totalGiftsResult] = await db.select({ count: count() }).from(giftsTable);
+  const [listedGiftsResult] = await db
     .select({ count: count() })
     .from(giftsTable)
     .where(eq(giftsTable.isListed, true));
-
-  const { usersTable: usersT } = await import("@workspace/db");
-  const totalUsersResult = await db.select({ count: count() }).from(usersT);
-
-  const priceStats = await db
+  const [totalUsersResult] = await db.select({ count: count() }).from(usersTable);
+  const [priceStats] = await db
     .select({ minPrice: min(giftsTable.price), maxPrice: max(giftsTable.price) })
     .from(giftsTable)
     .where(eq(giftsTable.isListed, true));
 
   res.json({
-    totalGifts: totalGiftsResult[0].count,
-    totalListedGifts: listedGiftsResult[0].count,
-    totalUsers: totalUsersResult[0].count,
-    minPrice: priceStats[0].minPrice ?? null,
-    maxPrice: priceStats[0].maxPrice ?? null,
+    totalGifts: totalGiftsResult.count,
+    totalListedGifts: listedGiftsResult.count,
+    totalUsers: totalUsersResult.count,
+    minPrice: priceStats.minPrice ?? null,
+    maxPrice: priceStats.maxPrice ?? null,
   });
 });
 

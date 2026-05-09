@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { useRegisterUser, useGetMe } from "@workspace/api-client-react";
-import type { User } from "@workspace/api-client-react/src/generated/api.schemas";
+import { useRegisterUser, useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
+import type { User } from "@workspace/api-client-react";
 
 interface AuthContextType {
   user: User | null;
@@ -17,10 +17,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const { mutate: registerUser } = useRegisterUser();
-  const { data: meData, refetch, isFetching } = useGetMe({
+  const { data: meData, refetch } = useGetMe({
     query: {
       enabled: false,
-      retry: false
+      retry: false,
+      queryKey: getGetMeQueryKey(),
     }
   });
 
