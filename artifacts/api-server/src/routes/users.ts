@@ -38,8 +38,8 @@ router.post("/users/register", async (req, res): Promise<void> => {
         firstName: firstName ?? user.firstName,
         lastName: lastName ?? user.lastName,
         photoUrl: photoUrl ?? user.photoUrl,
-        isNewUser: false,
         isAdmin,
+        // Never reset onboarding flags for returning users
       })
       .where(eq(usersTable.telegramId, telegramId))
       .returning();
