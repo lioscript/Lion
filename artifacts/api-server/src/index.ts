@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { startBot } from "./lib/bot";
 
 const rawPort = process.env["PORT"];
 
@@ -22,4 +23,14 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+
+  const botToken = process.env.BOT_TOKEN;
+  const replitDomains = process.env.REPLIT_DOMAINS;
+  if (botToken && replitDomains) {
+    const primaryDomain = replitDomains.split(",")[0].trim();
+    const miniAppUrl = `https://${primaryDomain}/`;
+    startBot(botToken, miniAppUrl);
+  } else {
+    logger.warn("BOT_TOKEN or REPLIT_DOMAINS not set — Telegram bot not started");
+  }
 });

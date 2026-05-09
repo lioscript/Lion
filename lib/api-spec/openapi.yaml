@@ -1,22 +1,26 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: NFT Gift Marketplace API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: users
+    description: User operations
+  - name: gifts
+    description: Gift marketplace operations
+  - name: admin
+    description: Admin operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +28,236 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current user
+      parameters:
+        - name: initData
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+
+  /users/register:
+    post:
+      operationId: registerUser
+      tags: [users]
+      summary: Register or login user via Telegram init data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRegister"
+      responses:
+        "200":
+          description: User registered or found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/me/onboarding:
+    patch:
+      operationId: completeOnboarding
+      tags: [users]
+      summary: Mark onboarding as complete for user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OnboardingUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /gifts:
+    get:
+      operationId: listGifts
+      tags: [gifts]
+      summary: List all listed gifts in the marketplace
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: sortOrder
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of gifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Gift"
+
+  /gifts/{id}:
+    get:
+      operationId: getGift
+      tags: [gifts]
+      summary: Get a single gift by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Gift details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Gift"
+        "404":
+          description: Not found
+
+  /admin/gifts/preview:
+    post:
+      operationId: previewGift
+      tags: [admin]
+      summary: Preview gift info from Telegram gift link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GiftPreviewRequest"
+      responses:
+        "200":
+          description: Gift preview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GiftPreview"
+        "400":
+          description: Invalid link
+        "403":
+          description: Forbidden
+
+  /admin/gifts:
+    get:
+      operationId: adminListGifts
+      tags: [admin]
+      summary: Admin list all gifts (including unlisted)
+      responses:
+        "200":
+          description: All gifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Gift"
+        "403":
+          description: Forbidden
+    post:
+      operationId: createGift
+      tags: [admin]
+      summary: Admin add gift to marketplace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GiftInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Gift"
+        "403":
+          description: Forbidden
+
+  /admin/gifts/{id}:
+    patch:
+      operationId: updateGift
+      tags: [admin]
+      summary: Admin update gift price or listing status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GiftUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Gift"
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteGift
+      tags: [admin]
+      summary: Admin remove gift from marketplace
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+
+  /market/stats:
+    get:
+      operationId: getMarketStats
+      tags: [gifts]
+      summary: Get market statistics
+      responses:
+        "200":
+          description: Market stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketStats"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +265,142 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    User:
+      type: object
+      required: [id, telegramId, firstName, isNewUser, onboardingComplete, createdAt]
+      properties:
+        id:
+          type: integer
+        telegramId:
+          type: string
+        username:
+          type: ["string", "null"]
+        firstName:
+          type: string
+        lastName:
+          type: ["string", "null"]
+        photoUrl:
+          type: ["string", "null"]
+        isNewUser:
+          type: boolean
+        onboardingComplete:
+          type: boolean
+        isAdmin:
+          type: boolean
+        createdAt:
+          type: string
+
+    UserRegister:
+      type: object
+      required: [telegramId, firstName]
+      properties:
+        telegramId:
+          type: string
+        username:
+          type: ["string", "null"]
+        firstName:
+          type: string
+        lastName:
+          type: ["string", "null"]
+        photoUrl:
+          type: ["string", "null"]
+        initData:
+          type: ["string", "null"]
+
+    OnboardingUpdate:
+      type: object
+      required: [telegramId]
+      properties:
+        telegramId:
+          type: string
+
+    Gift:
+      type: object
+      required: [id, name, giftSlug, imageUrl, price, isListed, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        giftSlug:
+          type: string
+        telegramLink:
+          type: string
+        imageUrl:
+          type: string
+        attributes:
+          type: ["string", "null"]
+        price:
+          type: number
+        isListed:
+          type: boolean
+        createdAt:
+          type: string
+
+    GiftInput:
+      type: object
+      required: [name, giftSlug, imageUrl, price]
+      properties:
+        name:
+          type: string
+        giftSlug:
+          type: string
+        telegramLink:
+          type: ["string", "null"]
+        imageUrl:
+          type: string
+        attributes:
+          type: ["string", "null"]
+        price:
+          type: number
+        isListed:
+          type: boolean
+
+    GiftUpdate:
+      type: object
+      properties:
+        price:
+          type: number
+        isListed:
+          type: boolean
+        name:
+          type: ["string", "null"]
+
+    GiftPreviewRequest:
+      type: object
+      required: [link]
+      properties:
+        link:
+          type: string
+
+    GiftPreview:
+      type: object
+      required: [name, giftSlug, imageUrl]
+      properties:
+        name:
+          type: string
+        giftSlug:
+          type: string
+        telegramLink:
+          type: string
+        imageUrl:
+          type: string
+        attributes:
+          type: ["string", "null"]
+
+    MarketStats:
+      type: object
+      required: [totalGifts, totalListedGifts, totalUsers]
+      properties:
+        totalGifts:
+          type: integer
+        totalListedGifts:
+          type: integer
+        totalUsers:
+          type: integer
+        minPrice:
+          type: ["number", "null"]
+        maxPrice:
+          type: ["number", "null"]
