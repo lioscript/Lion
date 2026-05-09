@@ -1,126 +1,170 @@
 import { useAuth } from "@/hooks/use-auth";
-import { Header } from "./store";
 import { TonIcon } from "@/components/ton-icon";
-import { Settings, Copy, Share2, ShieldAlert } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { ChevronRight, ShieldAlert, Menu } from "lucide-react";
 import { Link } from "wouter";
 
 export default function ProfilePage() {
   const { user } = useAuth();
 
   return (
-    <div className="w-full flex flex-col min-h-full">
-      <Header />
-      
-      <div className="px-4 py-6 flex flex-col gap-6">
-        
-        {/* Profile Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center text-2xl font-bold border-2 border-card shadow-lg shadow-primary/20">
-              {user?.firstName?.[0] || 'U'}
-            </div>
-            <div>
-              <h1 className="text-xl font-bold">{user?.firstName} {user?.lastName}</h1>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs bg-white/10 text-white/70 px-2 py-0.5 rounded-md font-mono">
-                  {user?.telegramId}
-                </span>
-                <Copy className="w-3 h-3 text-muted-foreground" />
+    <div className="w-full flex flex-col min-h-full pb-8" style={{ background: "#0a0a0f" }}>
+      {/* Header */}
+      <div className="px-4 py-3 flex items-center justify-between sticky top-0 z-40" style={{ background: "#0a0a0f" }}>
+        <button
+          className="w-9 h-9 rounded-xl flex items-center justify-center"
+          style={{ background: "rgba(255,255,255,0.07)" }}
+        >
+          <Menu className="w-4 h-4 text-white" />
+        </button>
+        <div
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+          style={{ background: "rgba(255,255,255,0.07)" }}
+        >
+          <TonIcon className="w-4 h-4" />
+          <span className="text-sm font-semibold text-white">0 TON</span>
+        </div>
+      </div>
+
+      <div className="px-4 flex flex-col gap-4">
+        {/* Profile row */}
+        <div
+          className="rounded-2xl p-4 flex items-center gap-3"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 border-2 border-white/20">
+            {user?.photoUrl ? (
+              <img src={user.photoUrl} alt="avatar" className="w-full h-full object-cover" />
+            ) : (
+              <div
+                className="w-full h-full flex items-center justify-center text-xl font-bold"
+                style={{ background: "linear-gradient(135deg,#2563eb,#7c3aed)", color: "#fff" }}
+              >
+                {user?.firstName?.[0] || "?"}
               </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="font-bold text-white truncate">{user?.firstName} {user?.lastName}</p>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full shrink-0" style={{ background: "rgba(255,215,0,0.15)", color: "#ffd700" }}>
+                #1000+ ✦
+              </span>
+            </div>
+            <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>@{user?.username || "unknown"}</p>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="text-xs font-semibold text-white/40">Inventory</p>
+            <div className="flex items-center gap-1 justify-end">
+              <span className="text-sm font-bold text-white">0 🎁</span>
+              <ChevronRight className="w-3 h-3 text-white/30" />
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10 text-white">
-            <Settings className="w-5 h-5" />
-          </Button>
         </div>
 
-        {/* Admin Banner */}
+        {/* Stats row */}
+        <div
+          className="rounded-2xl p-4 flex items-center gap-0"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          {[
+            { label: "Inventory Cost", value: "0 TON" },
+            { label: "Bought/Sold", value: "0/0" },
+            { label: "Total Volume", value: "0 TON" },
+          ].map((stat, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center text-center border-r last:border-r-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+              <p className="text-sm font-bold text-white">{stat.value}</p>
+              <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>{stat.label}</p>
+            </div>
+          ))}
+          <ChevronRight className="w-4 h-4 text-white/20 ml-2 shrink-0" />
+        </div>
+
+        {/* Admin panel */}
         {user?.isAdmin && (
           <Link href="/admin">
-            <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center justify-between cursor-pointer hover:bg-red-500/20 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="bg-red-500/20 p-2 rounded-xl text-red-500">
-                  <ShieldAlert className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-red-500">Admin Dashboard</h3>
-                  <p className="text-xs text-red-500/70">Manage marketplace gifts</p>
-                </div>
+            <div
+              className="rounded-2xl p-4 flex items-center gap-3 cursor-pointer"
+              style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}
+            >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(239,68,68,0.15)" }}>
+                <ShieldAlert className="w-5 h-5 text-red-400" />
               </div>
-              <ChevronRight className="w-5 h-5 text-red-500" />
+              <div className="flex-1">
+                <p className="font-bold text-red-400">Admin Dashboard</p>
+                <p className="text-xs mt-0.5 text-red-400/60">Manage marketplace gifts</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-red-400/40" />
             </div>
           </Link>
         )}
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-card border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-1">
-            <span className="text-xs text-muted-foreground font-medium">Inventory</span>
-            <span className="text-xl font-bold">0</span>
-          </div>
-          <div className="bg-card border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-1">
-            <span className="text-xs text-muted-foreground font-medium">Bought</span>
-            <div className="flex items-center gap-1">
-              <span className="text-xl font-bold">0</span>
-              <TonIcon className="w-3 h-3 text-primary" />
+        {/* Cashback + Season row */}
+        <div className="grid grid-cols-2 gap-3">
+          <div
+            className="rounded-2xl p-4"
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "rgba(255,255,255,0.35)" }}>
+              Cashback Bonus
+            </p>
+            <p className="text-base font-black text-white">0% <span style={{ color: "rgba(255,255,255,0.5)" }}>/</span> <span style={{ color: "rgba(255,255,255,0.7)" }}>Level 0</span></p>
+            {/* Progress bar */}
+            <div className="mt-3 relative h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
+              <div className="absolute left-0 top-0 h-full w-0 rounded-full" style={{ background: "linear-gradient(90deg,#22c55e,#16a34a)" }} />
             </div>
+            <div className="flex justify-between mt-1">
+              {["0%", "5%", "10%", "15%"].map((v) => (
+                <span key={v} className="text-[9px]" style={{ color: "rgba(255,255,255,0.3)" }}>{v}</span>
+              ))}
+            </div>
+            <p className="text-[10px] mt-2" style={{ color: "rgba(255,255,255,0.3)" }}>Available to claim 0 <TonIcon className="w-2.5 h-2.5 inline" /></p>
           </div>
-          <div className="bg-card border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-1">
-            <span className="text-xs text-muted-foreground font-medium">Sold</span>
-            <div className="flex items-center gap-1">
-              <span className="text-xl font-bold">0</span>
-              <TonIcon className="w-3 h-3 text-primary" />
+
+          <div
+            className="rounded-2xl p-4 flex flex-col justify-between"
+            style={{ background: "rgba(255,180,0,0.08)", border: "1px solid rgba(255,180,0,0.15)" }}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "rgba(255,180,0,0.6)" }}>
+              Season #2
+            </p>
+            <div className="text-2xl font-black text-white mt-2">0 ✦</div>
+            <div className="flex gap-1 mt-2">
+              {["🐱", "🏆", "🎁"].map((e, i) => (
+                <div key={i} className="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style={{ background: "rgba(255,255,255,0.07)" }}>
+                  {e}
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Cashback Level */}
-        <div className="bg-card border border-white/5 rounded-3xl p-5 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 blur-3xl rounded-full pointer-events-none"></div>
-          
-          <div className="flex justify-between items-end mb-4 relative z-10">
+        {/* Invite friends */}
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+            Invite friends and earn TON <TonIcon className="w-3 h-3 inline" />
+          </p>
+          <div
+            className="rounded-2xl p-4 flex items-start gap-3 mb-3"
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0" style={{ background: "#22c55e" }}>
+              👥
+            </div>
             <div>
-              <h3 className="font-bold text-lg flex items-center gap-2">
-                Cashback Bonus <span className="bg-green-500/20 text-green-400 text-xs px-2 py-0.5 rounded-full">Level 1</span>
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1">Current return: 5% of fees</p>
+              <p className="text-sm font-bold text-white">Get More Benefits</p>
+              <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Earn to 50% referral commissions Claim 10% season points and 50% cashback
+              </p>
             </div>
           </div>
-          
-          <div className="relative z-10">
-            <div className="flex justify-between text-xs mb-2 font-medium">
-              <span className="text-white">0 TON</span>
-              <span className="text-muted-foreground">100 TON to Lvl 2</span>
-            </div>
-            <Progress value={5} className="h-2 bg-white/5" />
-          </div>
+          <button
+            className="w-full h-13 rounded-2xl font-bold text-white"
+            style={{ background: "linear-gradient(135deg,#1d6ae5,#3b82f6)", height: 52 }}
+          >
+            Invite friends
+          </button>
         </div>
-
-        {/* Invite Friends */}
-        <div className="bg-gradient-to-br from-primary/20 to-purple-600/20 border border-primary/20 rounded-3xl p-5">
-          <div className="flex flex-col gap-4">
-            <div>
-              <h3 className="font-bold text-xl mb-1">Invite Friends</h3>
-              <p className="text-sm text-white/70">Earn 10% of your friends' trading fees for life.</p>
-            </div>
-            
-            <div className="flex gap-2">
-              <Button className="flex-1 bg-primary text-white rounded-xl h-12 font-semibold">
-                Share Link
-              </Button>
-              <Button variant="outline" size="icon" className="w-12 h-12 rounded-xl bg-white/5 border-white/10 shrink-0">
-                <Share2 className="w-5 h-5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
   );
 }
-
-// Just for the ChevronRight icon internally
-import { ChevronRight } from "lucide-react";

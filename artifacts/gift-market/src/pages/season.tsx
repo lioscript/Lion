@@ -1,123 +1,144 @@
-import { Header } from "./store";
-import { Star, Trophy, Users, CheckCircle2, ChevronRight } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+import { useState } from "react";
+import { TonIcon } from "@/components/ton-icon";
+import { ChevronRight } from "lucide-react";
 
 export default function SeasonPage() {
+  const [leaderTab, setLeaderTab] = useState("global");
+  const [contentTab, setContentTab] = useState("tasks");
+
+  const tasks = [
+    { icon: "✈️", color: "#2979ff", title: "Subscribe to @giftmarket", reward: 200, done: false },
+    { icon: "👥", color: "#9c27b0", title: "Invite friend", reward: 250, done: false },
+    { icon: "🎁", color: "#f57c00", title: "Buy first gift", reward: 500, done: false },
+  ];
+
   return (
-    <div className="w-full flex flex-col min-h-full">
-      <Header />
-      
-      <div className="px-4 py-4 flex flex-col gap-6">
-        
-        {/* Season Banner */}
-        <div className="w-full rounded-3xl bg-gradient-to-br from-yellow-900/40 via-orange-900/20 to-card border border-yellow-500/20 p-5 relative overflow-hidden">
-          <div className="absolute right-0 top-0 w-32 h-32 bg-yellow-500/20 blur-3xl rounded-full"></div>
-          
-          <div className="flex justify-between items-start relative z-10">
-            <div>
-              <div className="text-xs font-bold text-yellow-500 tracking-wider uppercase mb-1">CURRENT</div>
-              <h1 className="text-3xl font-black mb-1">Season #1</h1>
-              <p className="text-sm text-muted-foreground">Ends in 12 days</p>
-            </div>
-            <div className="bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 flex items-center gap-1.5">
-              <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-              <span className="font-bold text-white">Rank 14,203</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Leaderboard Tabs */}
-        <div className="flex bg-card p-1 rounded-xl border border-white/5">
-          <button className="flex-1 py-2 text-sm font-semibold rounded-lg bg-white/10 text-white shadow-sm">
-            Global
-          </button>
-          <button className="flex-1 py-2 text-sm font-medium rounded-lg text-muted-foreground hover:text-white">
-            Season 1
-          </button>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <StatCard title="Purchased" value="0" icon={<Trophy className="w-4 h-4 text-blue-400" />} />
-          <StatCard title="Sold" value="0" icon={<Star className="w-4 h-4 text-green-400" />} />
-          <StatCard title="Referrals" value="0" icon={<Users className="w-4 h-4 text-purple-400" />} />
-          <StatCard title="Tasks" value="0/10" icon={<CheckCircle2 className="w-4 h-4 text-orange-400" />} />
-        </div>
-
-        {/* Tasks Section */}
-        <div>
-          <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
-            Tasks <span className="bg-white/10 text-[10px] px-2 py-0.5 rounded-full font-mono">NEW</span>
-          </h2>
-          
-          <div className="flex flex-col gap-2">
-            <TaskItem 
-              title="Connect Wallet" 
-              reward="+1000" 
-              isCompleted={false} 
-              icon="👛" 
-            />
-            <TaskItem 
-              title="Buy first Gift" 
-              reward="+5000" 
-              isCompleted={false} 
-              icon="🎁" 
-            />
-            <TaskItem 
-              title="Invite 3 Friends" 
-              reward="+3000" 
-              isCompleted={false} 
-              icon="👥" 
-            />
-            <TaskItem 
-              title="Follow Channel" 
-              reward="+500" 
-              isCompleted={true} 
-              icon="📢" 
-            />
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-}
-
-function StatCard({ title, value, icon }: { title: string, value: string, icon: React.ReactNode }) {
-  return (
-    <div className="bg-card border border-white/5 rounded-2xl p-4 flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground">{title}</span>
-        {icon}
-      </div>
-      <span className="text-xl font-bold">{value}</span>
-    </div>
-  );
-}
-
-function TaskItem({ title, reward, isCompleted, icon }: { title: string, reward: string, isCompleted: boolean, icon: string }) {
-  return (
-    <div className="bg-card border border-white/5 rounded-2xl p-4 flex items-center justify-between opacity-100 transition-opacity">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-lg">
-          {icon}
-        </div>
-        <div>
-          <h4 className={`font-semibold text-sm ${isCompleted ? 'text-muted-foreground line-through' : 'text-white'}`}>{title}</h4>
-          <div className="flex items-center gap-1 mt-0.5">
-            <Star className={`w-3 h-3 ${isCompleted ? 'text-muted-foreground' : 'text-yellow-500 fill-yellow-500'}`} />
-            <span className={`text-xs font-bold ${isCompleted ? 'text-muted-foreground' : 'text-yellow-500'}`}>{reward}</span>
-          </div>
-        </div>
-      </div>
-      
-      {isCompleted ? (
-        <CheckCircle2 className="w-6 h-6 text-green-500" />
-      ) : (
-        <button className="bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-colors">
-          <ChevronRight className="w-4 h-4" />
+    <div className="w-full flex flex-col min-h-full pb-8" style={{ background: "#0a0a0f" }}>
+      {/* Header */}
+      <div className="px-4 py-3 flex items-center justify-between sticky top-0 z-40" style={{ background: "#0a0a0f" }}>
+        <button
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold"
+          style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.7)" }}
+        >
+          Rules <span className="text-xs text-white/40">ⓘ</span>
         </button>
-      )}
+        <div
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+          style={{ background: "rgba(255,255,255,0.07)" }}
+        >
+          <TonIcon className="w-4 h-4" />
+          <span className="text-sm font-semibold text-white">0 TON</span>
+        </div>
+      </div>
+
+      <div className="px-4 flex flex-col gap-5">
+        {/* Season hero */}
+        <div className="flex flex-col items-center pt-4 pb-2">
+          <div className="text-6xl mb-3">🚀</div>
+          <h1 className="text-2xl font-black text-white">Season #2</h1>
+          <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>Earn points & climb the leaderboard</p>
+        </div>
+
+        {/* Leaderboard period toggle */}
+        <div
+          className="flex rounded-2xl p-1"
+          style={{ background: "rgba(255,255,255,0.06)" }}
+        >
+          {["Global", "Season 1", "Season 2"].map((t) => (
+            <button
+              key={t}
+              onClick={() => setLeaderTab(t.toLowerCase().replace(" ", "_"))}
+              className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
+              style={{
+                background: leaderTab === t.toLowerCase().replace(" ", "_") ? "#fff" : "transparent",
+                color: leaderTab === t.toLowerCase().replace(" ", "_") ? "#0a0a0f" : "rgba(255,255,255,0.4)",
+              }}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {/* Stats card */}
+        <div
+          className="rounded-2xl p-4 flex flex-col gap-3"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Earned this period ⓘ
+            </span>
+            <ChevronRight className="w-4 h-4 text-white/30" />
+          </div>
+          <div className="text-2xl font-black text-white">0 ✦</div>
+          {[
+            { label: "Purchase", val: "0 🎁 / 0 ✦" },
+            { label: "Sold", val: "0 🎁 / 0 ✦" },
+            { label: "Referral", val: "0 👥 / 0 ✦" },
+            { label: "Tasks", val: "0 ✓ / 0 ✦" },
+          ].map((row) => (
+            <div key={row.label} className="flex items-center justify-between">
+              <span className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>{row.label}</span>
+              <span className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.7)" }}>{row.val}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Tasks / Leaderboard tabs */}
+        <div className="flex items-center gap-5 mt-1">
+          {["Tasks", "Leaderboard"].map((t) => (
+            <button
+              key={t}
+              onClick={() => setContentTab(t.toLowerCase())}
+              className="text-base font-bold transition-colors"
+              style={{ color: contentTab === t.toLowerCase() ? "#fff" : "rgba(255,255,255,0.3)" }}
+            >
+              {t} {t === "Leaderboard" && <span className="text-xs text-white/30">ⓘ</span>}
+            </button>
+          ))}
+        </div>
+
+        {contentTab === "tasks" && (
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.3)" }}>
+              One-time · {tasks.length}
+            </p>
+            {tasks.map((task, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 rounded-2xl px-4 py-3"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)" }}
+              >
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
+                  style={{ background: task.color }}
+                >
+                  {task.icon}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-white">{task.title}</p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <span className="text-xs font-bold text-yellow-400">✦ {task.reward}</span>
+                  </div>
+                </div>
+                <button
+                  className="px-4 py-1.5 rounded-xl text-sm font-semibold"
+                  style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.8)" }}
+                >
+                  Check
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {contentTab === "leaderboard" && (
+          <div className="flex flex-col items-center py-8">
+            <div className="text-5xl mb-3">🏆</div>
+            <p className="text-white/40 text-sm">No data yet</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

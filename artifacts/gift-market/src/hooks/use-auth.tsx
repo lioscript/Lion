@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { useRegisterUser } from "@workspace/api-client-react";
+import { useRegisterUser, setGlobalHeaders } from "@workspace/api-client-react";
 import type { User } from "@workspace/api-client-react";
 
 interface AuthContextType {
@@ -26,14 +26,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       firstName: "Dev",
       lastName: "User",
       username: "devuser",
+      photoUrl: undefined as string | undefined,
     };
 
     if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      const tgUser = tg.initDataUnsafe.user;
       mockUser = {
-        telegramId: tg.initDataUnsafe.user.id.toString(),
-        firstName: tg.initDataUnsafe.user.first_name,
-        lastName: tg.initDataUnsafe.user.last_name || "",
-        username: tg.initDataUnsafe.user.username || "",
+        telegramId: tgUser.id.toString(),
+        firstName: tgUser.first_name,
+        lastName: tgUser.last_name || "",
+        username: tgUser.username || "",
+        photoUrl: tgUser.photo_url || undefined,
       };
     }
 
@@ -41,6 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       { data: { ...mockUser, initData: "" } },
       {
         onSuccess: (data) => {
+          setGlobalHeaders({ "x-telegram-id": data.telegramId });
           setUser(data);
           setIsLoading(false);
         },
@@ -56,7 +60,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = () => setUser(null);
-  const updateUser = (u: User) => setUser(u);
+  const updateUser = (u: User) => {
+    setGlobalHeaders({ "x-telegram-id": u.telegramId });
+    setUser(u);
+  };
 
   return (
     <AuthContext.Provider value={{ user, isLoading, login, logout, updateUser }}>
