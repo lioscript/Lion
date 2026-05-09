@@ -15,6 +15,8 @@ tags:
     description: Gift marketplace operations
   - name: admin
     description: Admin operations
+  - name: promos
+    description: Promo code operations
 paths:
   /healthz:
     get:
@@ -245,6 +247,84 @@ paths:
         "404":
           description: Not found
 
+  /admin/promos:
+    get:
+      operationId: adminListPromos
+      tags: [admin]
+      summary: Admin list all promo codes
+      responses:
+        "200":
+          description: List of promos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Promo"
+        "403":
+          description: Forbidden
+    post:
+      operationId: adminCreatePromo
+      tags: [admin]
+      summary: Admin create a promo code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PromoInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Promo"
+        "403":
+          description: Forbidden
+
+  /admin/promos/{id}:
+    delete:
+      operationId: adminDeletePromo
+      tags: [admin]
+      summary: Admin delete a promo code
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+
+  /promos/apply:
+    post:
+      operationId: applyPromo
+      tags: [promos]
+      summary: Apply a promo code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PromoApplyRequest"
+      responses:
+        "200":
+          description: Promo applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromoApplyResponse"
+        "400":
+          description: Invalid or expired promo
+        "401":
+          description: Unauthorized
+
   /market/stats:
     get:
       operationId: getMarketStats
@@ -383,12 +463,68 @@ components:
           type: string
         giftSlug:
           type: string
+        giftNumber:
+          type: ["integer", "null"]
         telegramLink:
           type: string
         imageUrl:
           type: string
+        bgColor:
+          type: ["string", "null"]
         attributes:
           type: ["string", "null"]
+
+    Promo:
+      type: object
+      required: [id, code, discountPercent, maxUses, usedCount, createdBy, createdAt]
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        discountPercent:
+          type: number
+        maxUses:
+          type: integer
+        usedCount:
+          type: integer
+        expiresAt:
+          type: ["string", "null"]
+        createdBy:
+          type: string
+        createdAt:
+          type: string
+
+    PromoInput:
+      type: object
+      required: [code, discountPercent]
+      properties:
+        code:
+          type: string
+        discountPercent:
+          type: number
+        maxUses:
+          type: integer
+        expiresAt:
+          type: ["string", "null"]
+
+    PromoApplyRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+
+    PromoApplyResponse:
+      type: object
+      required: [valid, discountPercent, message]
+      properties:
+        valid:
+          type: boolean
+        discountPercent:
+          type: number
+        message:
+          type: string
 
     MarketStats:
       type: object

@@ -26,6 +26,10 @@ import type {
   ListGiftsParams,
   MarketStats,
   OnboardingUpdate,
+  Promo,
+  PromoApplyRequest,
+  PromoApplyResponse,
+  PromoInput,
   User,
   UserRegister,
 } from "./api.schemas";
@@ -936,6 +940,337 @@ export const useDeleteGift = <
   TContext
 > => {
   return useMutation(getDeleteGiftMutationOptions(options));
+};
+
+/**
+ * @summary Admin list all promo codes
+ */
+export const getAdminListPromosUrl = () => {
+  return `/api/admin/promos`;
+};
+
+export const adminListPromos = async (
+  options?: RequestInit,
+): Promise<Promo[]> => {
+  return customFetch<Promo[]>(getAdminListPromosUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getAdminListPromosQueryKey = () => {
+  return [`/api/admin/promos`] as const;
+};
+
+export const getAdminListPromosQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminListPromos>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof adminListPromos>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminListPromosQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminListPromos>>> = ({
+    signal,
+  }) => adminListPromos({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminListPromos>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type AdminListPromosQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminListPromos>>
+>;
+export type AdminListPromosQueryError = ErrorType<void>;
+
+/**
+ * @summary Admin list all promo codes
+ */
+
+export function useAdminListPromos<
+  TData = Awaited<ReturnType<typeof adminListPromos>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof adminListPromos>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getAdminListPromosQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Admin create a promo code
+ */
+export const getAdminCreatePromoUrl = () => {
+  return `/api/admin/promos`;
+};
+
+export const adminCreatePromo = async (
+  promoInput: PromoInput,
+  options?: RequestInit,
+): Promise<Promo> => {
+  return customFetch<Promo>(getAdminCreatePromoUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(promoInput),
+  });
+};
+
+export const getAdminCreatePromoMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminCreatePromo>>,
+    TError,
+    { data: BodyType<PromoInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminCreatePromo>>,
+  TError,
+  { data: BodyType<PromoInput> },
+  TContext
+> => {
+  const mutationKey = ["adminCreatePromo"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminCreatePromo>>,
+    { data: BodyType<PromoInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return adminCreatePromo(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminCreatePromoMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminCreatePromo>>
+>;
+export type AdminCreatePromoMutationBody = BodyType<PromoInput>;
+export type AdminCreatePromoMutationError = ErrorType<void>;
+
+/**
+ * @summary Admin create a promo code
+ */
+export const useAdminCreatePromo = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminCreatePromo>>,
+    TError,
+    { data: BodyType<PromoInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof adminCreatePromo>>,
+  TError,
+  { data: BodyType<PromoInput> },
+  TContext
+> => {
+  return useMutation(getAdminCreatePromoMutationOptions(options));
+};
+
+/**
+ * @summary Admin delete a promo code
+ */
+export const getAdminDeletePromoUrl = (id: number) => {
+  return `/api/admin/promos/${id}`;
+};
+
+export const adminDeletePromo = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getAdminDeletePromoUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getAdminDeletePromoMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminDeletePromo>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminDeletePromo>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["adminDeletePromo"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminDeletePromo>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return adminDeletePromo(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminDeletePromoMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminDeletePromo>>
+>;
+
+export type AdminDeletePromoMutationError = ErrorType<void>;
+
+/**
+ * @summary Admin delete a promo code
+ */
+export const useAdminDeletePromo = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminDeletePromo>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof adminDeletePromo>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getAdminDeletePromoMutationOptions(options));
+};
+
+/**
+ * @summary Apply a promo code
+ */
+export const getApplyPromoUrl = () => {
+  return `/api/promos/apply`;
+};
+
+export const applyPromo = async (
+  promoApplyRequest: PromoApplyRequest,
+  options?: RequestInit,
+): Promise<PromoApplyResponse> => {
+  return customFetch<PromoApplyResponse>(getApplyPromoUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(promoApplyRequest),
+  });
+};
+
+export const getApplyPromoMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof applyPromo>>,
+    TError,
+    { data: BodyType<PromoApplyRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof applyPromo>>,
+  TError,
+  { data: BodyType<PromoApplyRequest> },
+  TContext
+> => {
+  const mutationKey = ["applyPromo"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof applyPromo>>,
+    { data: BodyType<PromoApplyRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return applyPromo(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ApplyPromoMutationResult = NonNullable<
+  Awaited<ReturnType<typeof applyPromo>>
+>;
+export type ApplyPromoMutationBody = BodyType<PromoApplyRequest>;
+export type ApplyPromoMutationError = ErrorType<void>;
+
+/**
+ * @summary Apply a promo code
+ */
+export const useApplyPromo = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof applyPromo>>,
+    TError,
+    { data: BodyType<PromoApplyRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof applyPromo>>,
+  TError,
+  { data: BodyType<PromoApplyRequest> },
+  TContext
+> => {
+  return useMutation(getApplyPromoMutationOptions(options));
 };
 
 /**

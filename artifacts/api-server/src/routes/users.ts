@@ -30,7 +30,7 @@ router.post("/users/register", async (req, res): Promise<void> => {
 
   if (existing.length > 0) {
     const user = existing[0];
-    const isAdmin = adminId ? telegramId === adminId : user.isAdmin;
+    const isAdmin = (adminId ? telegramId === adminId : false) || user.isAdmin;
     const [updated] = await db
       .update(usersTable)
       .set({

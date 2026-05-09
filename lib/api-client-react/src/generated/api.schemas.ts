@@ -81,10 +81,44 @@ export interface GiftPreviewRequest {
 export interface GiftPreview {
   name: string;
   giftSlug: string;
+  /** @nullable */
+  giftNumber?: number | null;
   telegramLink?: string;
   imageUrl: string;
   /** @nullable */
+  bgColor?: string | null;
+  /** @nullable */
   attributes?: string | null;
+}
+
+export interface Promo {
+  id: number;
+  code: string;
+  discountPercent: number;
+  maxUses: number;
+  usedCount: number;
+  /** @nullable */
+  expiresAt?: string | null;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface PromoInput {
+  code: string;
+  discountPercent: number;
+  maxUses?: number;
+  /** @nullable */
+  expiresAt?: string | null;
+}
+
+export interface PromoApplyRequest {
+  code: string;
+}
+
+export interface PromoApplyResponse {
+  valid: boolean;
+  discountPercent: number;
+  message: string;
 }
 
 export interface MarketStats {

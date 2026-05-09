@@ -130,8 +130,10 @@ export const PreviewGiftBody = zod.object({
 export const PreviewGiftResponse = zod.object({
   name: zod.string(),
   giftSlug: zod.string(),
+  giftNumber: zod.number().nullish(),
   telegramLink: zod.string().optional(),
   imageUrl: zod.string(),
+  bgColor: zod.string().nullish(),
   attributes: zod.string().nullish(),
 });
 
@@ -194,6 +196,51 @@ export const UpdateGiftResponse = zod.object({
  */
 export const DeleteGiftParams = zod.object({
   id: zod.coerce.number(),
+});
+
+/**
+ * @summary Admin list all promo codes
+ */
+export const AdminListPromosResponseItem = zod.object({
+  id: zod.number(),
+  code: zod.string(),
+  discountPercent: zod.number(),
+  maxUses: zod.number(),
+  usedCount: zod.number(),
+  expiresAt: zod.string().nullish(),
+  createdBy: zod.string(),
+  createdAt: zod.string(),
+});
+export const AdminListPromosResponse = zod.array(AdminListPromosResponseItem);
+
+/**
+ * @summary Admin create a promo code
+ */
+export const AdminCreatePromoBody = zod.object({
+  code: zod.string(),
+  discountPercent: zod.number(),
+  maxUses: zod.number().optional(),
+  expiresAt: zod.string().nullish(),
+});
+
+/**
+ * @summary Admin delete a promo code
+ */
+export const AdminDeletePromoParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Apply a promo code
+ */
+export const ApplyPromoBody = zod.object({
+  code: zod.string(),
+});
+
+export const ApplyPromoResponse = zod.object({
+  valid: zod.boolean(),
+  discountPercent: zod.number(),
+  message: zod.string(),
 });
 
 /**

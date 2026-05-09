@@ -9,8 +9,12 @@
 export interface GiftPreview {
   name: string;
   giftSlug: string;
+  /** @nullable */
+  giftNumber?: number | null;
   telegramLink?: string;
   imageUrl: string;
+  /** @nullable */
+  bgColor?: string | null;
   /** @nullable */
   attributes?: string | null;
 }
